@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authentication import TokenAuthentication
-
 #CRUD user + Login + Logout
 
 @api_view(['POST'])
@@ -24,7 +23,12 @@ def register(request):
         
         token = Token.objects.create(user=user) #Genero el token
         
-        return Response({'token': token.key, 'user': serializer.data}, status.HTTP_201_CREATED)
+        # return Response({'token': token.key, 'user': serializer.data}, status.HTTP_201_CREATED)
+        response = Response(status.HTTP_201_CREATED)
+        response.set_cookie('token', token.key)
+        response.data = {'user': serializer.data}
+        
+        return response
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -39,7 +43,12 @@ def login(request):
 
     serializer = UserSerializer(instance=user)
 
-    return Response({'token':token.key, 'user':serializer.data}, status=status.HTTP_200_OK)
+    # return Response({'token':token.key, 'user':serializer.data}, status=status.HTTP_200_OK)
+    response = Response(status.HTTP_201_CREATED)
+    response.set_cookie('token', token.key)
+    response.data = {'user': serializer.data}
+    
+    return response
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
